@@ -4,9 +4,25 @@ from pygatt.util import uuid16_to_uuid
 
 import logging
 import threading
-
+import time
 
 uuid_music_data = uuid16_to_uuid(0x0)
+
+def attempt_connection(scanner, mac_address):
+    scanner.start(False)
+    try:
+        dev = scanner.connect(mac_address, 5, pygatt.BLEAddressType.random)
+        if uuid_music_data in dev.discover_characteristics():
+            dev.exchange_mtu(512)
+            s = dev.char_read(uuid_music_data)
+            print(s)
+            print("Received data from", mac_address)
+        else:
+            print("Failed for", mac_address)
+    except:
+        print("Failed for", mac_address)
+    scanner.stop()    
+
 
 def scan():
     ## Scan for devices
@@ -16,25 +32,16 @@ def scan():
     scanner.stop()
 
     
-    addresses = [b["address"] for b in ble_devices]
-    ## TODO: attempt to connect to all the addresses
-
-    # Test only!
-    dev_d = {b["name"]:b["address"] for b in ble_devices}
-    print(dev_d["Rohan Phone"])
+    # attempt connection for all addresses found!
+    for b in ble_devices:
+        dev = attempt_connection(scanner, b["address"])
 
 
-    #### code for connecting to phone
-    scanner.start(False)
-    dev = scanner.connect(dev_d["Rohan Phone"], 5, pygatt.BLEAddressType.random)
-    print("connected")
-    dev.discover_characteristics()
-    #dev.subscribe(uuid_music_data, indication=False)
-    #print("subscribed")
-
-    print(dev.char_read(uuid_music_data))
-    scanner.stop()
 #logging.basicConfig()
 #logging.getLogger('pygatt').setLevel(logging.DEBUG)
     
-scan()
+while True:
+    print("Scanning...")
+    scan()
+    print("Done with scanning")
+    time.sleep(1)
