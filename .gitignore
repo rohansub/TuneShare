@@ -10,3 +10,10 @@
 .externalNativeBuild
 spotify-app-remote-release-0.6.1/
 spotify-auth-release-1.1.0/
+TuneShareServer/env*
+*credentials.py
+*__pycache__
+*.cache-*
+*.vscode/
+*geckodriver.log
+*~
