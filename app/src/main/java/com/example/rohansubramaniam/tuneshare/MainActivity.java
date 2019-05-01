@@ -16,6 +16,7 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -99,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothAdapter.setName("TuneShareDevice");
 
 
         message = (TextView) findViewById(R.id.message);
@@ -276,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void startAdvertising() {
+//        bluetoothAdapter.setName("TuneShareDevice");
         advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
         advertiser.startAdvertising(mAdvertiseSettings, mAdvertiseData, mAdvertiseScanResponse, mAdvertiseCallback);
     }
@@ -303,8 +306,8 @@ public class MainActivity extends AppCompatActivity {
         mPrefCharacteristic =
                 new BluetoothGattCharacteristic(MUSIC_UUID,
                         BluetoothGattCharacteristic.PROPERTY_READ |
-                                BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                        BluetoothGattCharacteristic.PERMISSION_READ);
+                                BluetoothGattCharacteristic.PROPERTY_NOTIFY | BluetoothGattCharacteristic.PROPERTY_WRITE,
+                        BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PROPERTY_WRITE);
 
         mPrefCharacteristic.setValue("Get data here");
         gattService.addCharacteristic(mPrefCharacteristic);
@@ -360,13 +363,13 @@ public class MainActivity extends AppCompatActivity {
                 mBluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS,
                         offset, spotifyData.toString().getBytes());
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        message.setText("Data has been sent! You may close the application");
-
-                    }
-                });
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        message.setText("Data has been sent! You may close the application");
+//
+//                    }
+//                });
 
             } else {
                 mBluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS,
@@ -383,17 +386,27 @@ public class MainActivity extends AppCompatActivity {
         public void onConnectionStateChange(BluetoothDevice device, final int status, int state) {
             //Callback indicating when a remote device has been connected or disconnected.
             super.onConnectionStateChange(device, status, state);
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+            if (status == BluetoothGatt.GATT_SUCCESS && state == BluetoothGatt.STATE_CONNECTED) {
                 Log.i("INFO", "SUCCESS");
+
+            } else if (status == BluetoothGatt.GATT_SUCCESS && state == BluetoothGatt.STATE_DISCONNECTED){
+                Log.i("INFO", "Disconnect");
+                if (spotifyData != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            message.setText("Data has been sent! You may close the application");
+
+                        }
+                    });
+                }
+
 
 
             } else {
                 Log.e("ErROR", "fucked");
             }
         }
-
-//        @Override
-//        public void
 
     };
 
