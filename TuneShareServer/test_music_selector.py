@@ -20,12 +20,12 @@ token = util.prompt_for_user_token(username, scope, CLIENT_ID, CLIENT_SECRET, "h
 
 
 selector = MusicSelector(token)
-selector.add_artist("test-addr", "4j56EQDQu5XnL7R3E9iFJT")
+selector.add_artists("test-addr", ["4j56EQDQu5XnL7R3E9iFJT"])
 time.sleep(15)
 selector.clear_expired()
 print("Cleared!")
-time.sleep(5)
-selector.add_artist("test-addr", "4j56EQDQu5XnL7R3E9iFJT")
+#time.sleep(5)
+#selector.add_artists("test-addr", ["4j56EQDQu5XnL7R3E9iFJT"])
 time.sleep(5)
 
 

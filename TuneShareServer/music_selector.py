@@ -41,29 +41,33 @@ class MusicSelector:
             )
             del self.artistSongs[k]
 
-    def add_artist(self, addr, artistId):
+    def add_artists(self, addr, artistIds):
         # Don't include preference if this address has been
         # considered already
         if addr in self.macAddresses:
             return
-
+        self.macAddresses[addr] = datetime.now()
         # if this artist has already been added, don't add 
         # again, but update timestamp
-        isOld = artistId in self.artists
-        self.artists[artistId] = datetime.now()
-        if isOld:
-            return
+        songs = []
+        for artistId in artistIds:
+            isOld = artistId in self.artists
+            self.artists[artistId] = datetime.now()
+            if isOld:
+                continue
 
-        self.artists[artistId] = datetime.now()
-        tracks = self.sp.artist_top_tracks(artistId)
-        for t in tracks["tracks"]:
-            self.artistSongs[artistId].append(t["id"])
-        print(self.artistSongs[artistId])
-        self.sp.user_playlist_add_tracks(
-            self.userId, 
-            self.playlistId, 
-            self.artistSongs[artistId]
-        )
+            self.artists[artistId] = datetime.now()
+            tracks = self.sp.artist_top_tracks(artistId)
+            for t in tracks["tracks"]:
+                self.artistSongs[artistId].append(t["id"])
+                songs.append(t["id"])
+        if len(songs) > 0:
+            self.sp.user_playlist_add_tracks(
+                self.userId, 
+                self.playlistId, 
+                songs
+            )
+            print("Sent:", songs)
         
 
     def __get_playlist_id(self):
